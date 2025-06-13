@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,9 +25,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,23 +70,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Personaje(name: String, color: Color, style: TextStyle){
-    Text(text = name)
+fun Personaje(name: String, color: Color, style: TextStyle, lines: Int = Int.MAX_VALUE){
+    Text(text = name, color = color, style = style, maxLines = lines)
 }
 
 @Composable
 fun Personajes(personaje: PersonajeTarjeta){
-    Column {
+    var expanded by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.padding(start = 8.dp).clickable {
+        expanded = !expanded
+    }
+        ) {
         Personaje(personaje.title, MaterialTheme.colorScheme.primary, MaterialTheme.typography.headlineMedium)
-        Personaje(personaje.body, MaterialTheme.colorScheme.onBackground, MaterialTheme.typography.bodyLarge)
+        Personaje(personaje.body, MaterialTheme.colorScheme.onBackground, MaterialTheme.typography.bodyLarge, if(expanded) Int.MAX_VALUE else 1)
     }
 }
 
 @Composable
-fun ImagenHeroe(){
+fun ImagenHeroe(imagenName: String){
+    val context = LocalContext.current
+    val ImageResId = remember(imagenName) {
+        context.resources.getIdentifier(imagenName.lowercase(), "drawable", context.packageName)
+    }
     Image(
-        painter = painterResource(id = R.drawable.freezer),
-        contentDescription = "Freezer",
+        painter = painterResource(id = ImageResId),
+        contentDescription = null,
         modifier = Modifier.padding(16.dp).size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary)
     )
 }
@@ -102,7 +116,7 @@ fun MyPersonajes(personaje: PersonajeTarjeta){
 
     }
     Row(modifier = Modifier.padding(8.dp).background(MaterialTheme.colorScheme.background)) {
-        ImagenHeroe()
+        ImagenHeroe(personaje.title)
         Personajes(personaje)
     }
 }
